@@ -3,97 +3,339 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Генератор шаблона</title>
+  <title>Диплом</title>
+
   <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-    input { padding: 10px 12px; min-width: 260px; }
-    button { padding: 10px 12px; cursor: pointer; }
-    canvas { margin-top: 16px; max-width: 100%; border: 1px solid #ddd; }
-    .hint { color: #555; margin-top: 8px; }
+    :root{
+      --bg: #0b2545;
+      --card: rgba(255,255,255,.10);
+      --card2: rgba(255,255,255,.14);
+      --text: rgba(255,255,255,.95);
+      --muted: rgba(255,255,255,.70);
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --radius: 22px;
+    }
+
+    /* Подключение шрифта.
+       Переименуй файл и путь как у тебя в репозитории.
+       Лучше всего .woff2. */
+    @font-face{
+      font-family: "TT Lovelies Script";
+      src: url("./TT_Lovelies_Script.woff2") format("woff2");
+      font-display: swap;
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      background: radial-gradient(1200px 700px at 20% 10%, rgba(255,255,255,.10), transparent 60%),
+                  radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.08), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 24px;
+    }
+
+    .wrap{
+      width: min(980px, 100%);
+      display:grid;
+      gap: 18px;
+    }
+
+    .panel{
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .top{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 12px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .title{
+      font-size: 18px;
+      letter-spacing: .2px;
+      color: var(--muted);
+    }
+
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    input{
+      appearance:none;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 12px 14px;
+      min-width: 280px;
+      outline: none;
+      font-size: 16px;
+    }
+    input::placeholder{ color: rgba(255,255,255,.55); }
+    input:focus{
+      border-color: rgba(255,255,255,.35);
+      box-shadow: 0 0 0 4px rgba(255,255,255,.10);
+    }
+
+    button{
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform .06s ease, filter .2s ease, opacity .2s ease;
+      user-select:none;
+      white-space: nowrap;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .btn-primary{
+      background: rgba(255,255,255,.92);
+      color: #0b2545;
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+    }
+    .btn-primary:hover{ filter: brightness(.98); }
+
+    .btn-secondary{
+      background: rgba(255,255,255,.14);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .btn-secondary:hover{ filter: brightness(1.05); }
+
+    .btn-hidden{ display:none; }
+    .btn-disabled{
+      opacity: .55;
+      cursor: not-allowed;
+      transform:none;
+    }
+
+    .hint{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .stage{
+      display:grid;
+      place-items:center;
+      padding: 18px;
+    }
+
+    /* Полотно диплома */
+    canvas{
+      width: min(900px, 100%);
+      height: auto;
+      border-radius: 18px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.35);
+      background: transparent;
+      display:none; /* важно: не видно до генерации */
+    }
+
+    .empty{
+      display:grid;
+      place-items:center;
+      padding: 44px 18px;
+      text-align:center;
+      color: var(--muted);
+      border: 1px dashed rgba(255,255,255,.22);
+      border-radius: 18px;
+      width: min(900px, 100%);
+    }
+    .empty .big{
+      color: rgba(255,255,255,.88);
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
-<body>
-  <h1>Генератор</h1>
 
-  <div class="row">
-    <input id="fio" placeholder="Имя Фамилия" />
-    <button id="gen">Сгенерировать</button>
-    <button id="dl" disabled>Скачать PNG</button>
+<body>
+  <div class="wrap">
+
+    <div class="panel">
+      <div class="top">
+        <div class="title">Введи имя и фамилию — получи диплом</div>
+
+        <div class="controls">
+          <input id="fio" placeholder="Имя Фамилия" autocomplete="name" />
+          <button id="gen" class="btn-primary btn-disabled" disabled>Получить диплом</button>
+          <button id="dl" class="btn-secondary btn-hidden">Скачать диплом</button>
+          <button id="reset" class="btn-secondary btn-hidden">Сделать ещё</button>
+        </div>
+      </div>
+
+      <div class="hint">
+        Диплом появится только после нажатия кнопки. Кнопка “Скачать” появится после генерации.
+      </div>
+    </div>
+
+    <div class="panel stage">
+      <div id="empty" class="empty">
+        <div>
+          <div class="big">Диплом пока не сгенерирован</div>
+          <div>Введите имя и фамилию сверху и нажмите “Получить диплом”.</div>
+        </div>
+      </div>
+
+      <canvas id="c"></canvas>
+    </div>
+
   </div>
 
-  <div class="hint">Шаблон: template.png (лежит рядом с index.html)</div>
-
-  <canvas id="c"></canvas>
-
   <script>
-    const canvas = document.getElementById('c');
-    const ctx = canvas.getContext('2d');
     const fioInput = document.getElementById('fio');
     const genBtn = document.getElementById('gen');
     const dlBtn = document.getElementById('dl');
+    const resetBtn = document.getElementById('reset');
+    const emptyBox = document.getElementById('empty');
 
-    const img = new Image();
-    img.src = 'template.png';
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
 
-    // Настройки текста (подгони под свой шаблон)
-    const TEXT_X = 600;     // координата X (поменяешь)
-    const TEXT_Y = 820;     // координата Y (поменяешь)
-    const MAX_W  = 900;     // макс ширина текста
-    const FONT   = '48px Arial'; // шрифт (можешь заменить)
-    const COLOR  = '#111';  // цвет
+    const bg = new Image();
+    bg.src = './background.png';
 
-    function fitTextToWidth(text, maxWidth) {
-      // уменьшает размер шрифта, если не помещается
-      let size = 48;
-      while (size > 18) {
-        ctx.font = `${size}px Arial`;
-        if (ctx.measureText(text).width <= maxWidth) return `${size}px Arial`;
+    let generated = false;
+
+    function normalizeFio(s){
+      return s
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function setGenerateEnabled(){
+      const text = normalizeFio(fioInput.value);
+      const ok = text.length >= 3;
+      genBtn.disabled = !ok;
+      genBtn.classList.toggle('btn-disabled', !ok);
+    }
+
+    fioInput.addEventListener('input', setGenerateEnabled);
+
+    function fitFontSize(text, maxWidth, startSize, minSize){
+      let size = startSize;
+      while (size >= minSize){
+        ctx.font = `${size}px "TT Lovelies Script", cursive`;
+        if (ctx.measureText(text).width <= maxWidth) return size;
         size -= 2;
       }
-      return `18px Arial`;
+      return minSize;
     }
 
-    function render() {
-      const text = fioInput.value.trim();
-      if (!text) return;
+    function drawDiploma(fio){
+      // размер канваса = размер фоновой картинки
+      canvas.width = bg.naturalWidth;
+      canvas.height = bg.naturalHeight;
 
-      // под размер картинки
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-
+      // фон
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
+      ctx.drawImage(bg, 0, 0);
 
-      ctx.fillStyle = COLOR;
+      // общие параметры
+      ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // если длинное ФИО — уменьшим шрифт
-      ctx.font = FONT;
-      ctx.font = fitTextToWidth(text, MAX_W);
+      // 1) Надпись по центру: “ДИПЛОМ”
+      // координаты подобраны “примерно красиво”.
+      // если нужно — легко сместим.
+      const centerX = canvas.width / 2;
 
-      // выравнивание по центру “поля”
-      ctx.textAlign = 'center';
-      ctx.fillText(text, TEXT_X, TEXT_Y);
+      // тень для контраста
+      ctx.shadowColor = 'rgba(0,0,0,.35)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 3;
 
-      dlBtn.disabled = false;
+      ctx.fillStyle = 'rgba(255,255,255,.96)';
+      ctx.font = `88px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+      ctx.fillText('ДИПЛОМ', centerX, canvas.height * 0.40);
+
+      // 2) ФИО чуть ниже красивым шрифтом
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 2;
+
+      const nameY = canvas.height * 0.56;
+      const maxW = canvas.width * 0.78;
+
+      const size = fitFontSize(fio, maxW, 84, 42);
+      ctx.font = `${size}px "TT Lovelies Script", cursive`;
+      ctx.fillStyle = 'rgba(255,255,255,.98)';
+      ctx.fillText(fio, centerX, nameY);
+
+      // убрать тень для всего остального
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
     }
 
-    genBtn.addEventListener('click', render);
+    function showResultUI(){
+      emptyBox.style.display = 'none';
+      canvas.style.display = 'block';
+      dlBtn.classList.remove('btn-hidden');
+      resetBtn.classList.remove('btn-hidden');
+      generated = true;
+    }
+
+    function hideResultUI(){
+      emptyBox.style.display = 'grid';
+      canvas.style.display = 'none';
+      dlBtn.classList.add('btn-hidden');
+      resetBtn.classList.add('btn-hidden');
+      generated = false;
+    }
+
+    genBtn.addEventListener('click', () => {
+      const fio = normalizeFio(fioInput.value);
+      if (!fio) return;
+
+      // если фон ещё не загрузился — подождём через onload
+      if (!bg.complete || !bg.naturalWidth){
+        bg.onload = () => {
+          drawDiploma(fio);
+          showResultUI();
+        };
+        return;
+      }
+
+      drawDiploma(fio);
+      showResultUI();
+    });
 
     dlBtn.addEventListener('click', () => {
+      if (!generated) return;
       const a = document.createElement('a');
-      a.download = 'result.png';
+      a.download = 'diploma.png';
       a.href = canvas.toDataURL('image/png');
       a.click();
     });
 
-    img.onload = () => {
-      // опционально сразу показать пустой шаблон
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      ctx.drawImage(img, 0, 0);
-    };
+    resetBtn.addEventListener('click', () => {
+      fioInput.value = '';
+      setGenerateEnabled();
+      hideResultUI();
+    });
+
+    // стартовое состояние
+    setGenerateEnabled();
+    hideResultUI();
   </script>
 </body>
 </html>
