@@ -7,21 +7,18 @@
 
   <style>
     :root{
-      --bg: #0b2545;
-      --card: rgba(255,255,255,.10);
-      --card2: rgba(255,255,255,.14);
+      --bg: #1f4f7a;                /* светлее */
+      --card: rgba(255,255,255,.16);
+      --card2: rgba(255,255,255,.22);
       --text: rgba(255,255,255,.95);
-      --muted: rgba(255,255,255,.70);
-      --shadow: 0 18px 50px rgba(0,0,0,.35);
+      --muted: rgba(255,255,255,.78);
+      --shadow: 0 18px 50px rgba(0,0,0,.28);
       --radius: 22px;
     }
 
-    /* Подключение шрифта.
-       Переименуй файл и путь как у тебя в репозитории.
-       Лучше всего .woff2. */
     @font-face{
       font-family: "TT Lovelies Script";
-      src: url("./TT_Lovelies_Script.woff2") format("woff2");
+      src: url("./TT_Lovelies_Script.woff2?v=3") format("woff2");
       font-display: swap;
     }
 
@@ -29,9 +26,10 @@
     body{
       margin:0;
       min-height:100vh;
-      background: radial-gradient(1200px 700px at 20% 10%, rgba(255,255,255,.10), transparent 60%),
-                  radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.08), transparent 55%),
-                  var(--bg);
+      background:
+        radial-gradient(1100px 700px at 20% 10%, rgba(255,255,255,.16), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.12), transparent 55%),
+        linear-gradient(180deg, #2e78b3, var(--bg));
       color: var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       display:flex;
@@ -43,12 +41,12 @@
     .wrap{
       width: min(980px, 100%);
       display:grid;
-      gap: 18px;
+      gap: 16px;
     }
 
     .panel{
       background: linear-gradient(180deg, var(--card), var(--card2));
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.18);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 18px;
@@ -79,8 +77,8 @@
 
     input{
       appearance:none;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(0,0,0,.12);
       color: var(--text);
       border-radius: 999px;
       padding: 12px 14px;
@@ -88,10 +86,10 @@
       outline: none;
       font-size: 16px;
     }
-    input::placeholder{ color: rgba(255,255,255,.55); }
+    input::placeholder{ color: rgba(255,255,255,.62); }
     input:focus{
-      border-color: rgba(255,255,255,.35);
-      box-shadow: 0 0 0 4px rgba(255,255,255,.10);
+      border-color: rgba(255,255,255,.42);
+      box-shadow: 0 0 0 4px rgba(255,255,255,.12);
     }
 
     button{
@@ -107,25 +105,21 @@
     button:active{ transform: translateY(1px); }
 
     .btn-primary{
-      background: rgba(255,255,255,.92);
-      color: #0b2545;
-      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+      background: rgba(255,255,255,.94);
+      color: #124466;
+      box-shadow: 0 10px 24px rgba(0,0,0,.22);
     }
-    .btn-primary:hover{ filter: brightness(.98); }
+    .btn-primary:hover{ filter: brightness(.99); }
 
     .btn-secondary{
-      background: rgba(255,255,255,.14);
+      background: rgba(255,255,255,.18);
       color: var(--text);
-      border: 1px solid rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.22);
     }
     .btn-secondary:hover{ filter: brightness(1.05); }
 
     .btn-hidden{ display:none; }
-    .btn-disabled{
-      opacity: .55;
-      cursor: not-allowed;
-      transform:none;
-    }
+    .btn-disabled{ opacity:.55; cursor:not-allowed; transform:none; }
 
     .hint{
       margin-top: 10px;
@@ -138,32 +132,16 @@
       display:grid;
       place-items:center;
       padding: 18px;
+      min-height: 220px;
     }
 
-    /* Полотно диплома */
     canvas{
       width: min(900px, 100%);
       height: auto;
       border-radius: 18px;
-      box-shadow: 0 16px 40px rgba(0,0,0,.35);
+      box-shadow: 0 16px 40px rgba(0,0,0,.28);
       background: transparent;
-      display:none; /* важно: не видно до генерации */
-    }
-
-    .empty{
-      display:grid;
-      place-items:center;
-      padding: 44px 18px;
-      text-align:center;
-      color: var(--muted);
-      border: 1px dashed rgba(255,255,255,.22);
-      border-radius: 18px;
-      width: min(900px, 100%);
-    }
-    .empty .big{
-      color: rgba(255,255,255,.88);
-      font-size: 22px;
-      margin-bottom: 8px;
+      display:none; /* показываем только после генерации */
     }
   </style>
 </head>
@@ -184,18 +162,11 @@
       </div>
 
       <div class="hint">
-        Диплом появится только после нажатия кнопки. Кнопка “Скачать” появится после генерации.
+        Диплом появится после нажатия кнопки. “Скачать” появится после генерации.
       </div>
     </div>
 
     <div class="panel stage">
-      <div id="empty" class="empty">
-        <div>
-          <div class="big">Диплом пока не сгенерирован</div>
-          <div>Введите имя и фамилию сверху и нажмите “Получить диплом”.</div>
-        </div>
-      </div>
-
       <canvas id="c"></canvas>
     </div>
 
@@ -206,20 +177,19 @@
     const genBtn = document.getElementById('gen');
     const dlBtn = document.getElementById('dl');
     const resetBtn = document.getElementById('reset');
-    const emptyBox = document.getElementById('empty');
 
     const canvas = document.getElementById('c');
     const ctx = canvas.getContext('2d');
 
-    const bg = new Image();
-    bg.src = './background.png';
+    // ВАЖНО: диплом рисуется строго из background.png
+    // ?v=3 — чтобы не грузилась старая версия из кэша
+    const diplomaBg = new Image();
+    diplomaBg.src = './background.png?v=3';
 
     let generated = false;
 
     function normalizeFio(s){
-      return s
-        .replace(/\s+/g, ' ')
-        .trim();
+      return s.replace(/\s+/g, ' ').trim();
     }
 
     function setGenerateEnabled(){
@@ -228,7 +198,6 @@
       genBtn.disabled = !ok;
       genBtn.classList.toggle('btn-disabled', !ok);
     }
-
     fioInput.addEventListener('input', setGenerateEnabled);
 
     function fitFontSize(text, maxWidth, startSize, minSize){
@@ -242,52 +211,43 @@
     }
 
     function drawDiploma(fio){
-      // размер канваса = размер фоновой картинки
-      canvas.width = bg.naturalWidth;
-      canvas.height = bg.naturalHeight;
+      canvas.width = diplomaBg.naturalWidth;
+      canvas.height = diplomaBg.naturalHeight;
 
-      // фон
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(bg, 0, 0);
+      ctx.drawImage(diplomaBg, 0, 0);
 
-      // общие параметры
+      const centerX = canvas.width / 2;
+
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // 1) Надпись по центру: “ДИПЛОМ”
-      // координаты подобраны “примерно красиво”.
-      // если нужно — легко сместим.
-      const centerX = canvas.width / 2;
-
-      // тень для контраста
-      ctx.shadowColor = 'rgba(0,0,0,.35)';
-      ctx.shadowBlur = 12;
-      ctx.shadowOffsetY = 3;
-
-      ctx.fillStyle = 'rgba(255,255,255,.96)';
-      ctx.font = `88px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
-      ctx.fillText('ДИПЛОМ', centerX, canvas.height * 0.40);
-
-      // 2) ФИО чуть ниже красивым шрифтом
+      // тень для читаемости
+      ctx.shadowColor = 'rgba(0,0,0,.28)';
       ctx.shadowBlur = 10;
       ctx.shadowOffsetY = 2;
 
+      // Надпись по центру
+      ctx.fillStyle = 'rgba(255,255,255,.97)';
+      ctx.font = `88px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+      ctx.fillText('ДИПЛОМ', centerX, canvas.height * 0.40);
+
+      // ФИО ниже
       const nameY = canvas.height * 0.56;
       const maxW = canvas.width * 0.78;
-
       const size = fitFontSize(fio, maxW, 84, 42);
+
       ctx.font = `${size}px "TT Lovelies Script", cursive`;
       ctx.fillStyle = 'rgba(255,255,255,.98)';
       ctx.fillText(fio, centerX, nameY);
 
-      // убрать тень для всего остального
+      // выключим тень
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
       ctx.shadowOffsetY = 0;
     }
 
     function showResultUI(){
-      emptyBox.style.display = 'none';
       canvas.style.display = 'block';
       dlBtn.classList.remove('btn-hidden');
       resetBtn.classList.remove('btn-hidden');
@@ -295,7 +255,6 @@
     }
 
     function hideResultUI(){
-      emptyBox.style.display = 'grid';
       canvas.style.display = 'none';
       dlBtn.classList.add('btn-hidden');
       resetBtn.classList.add('btn-hidden');
@@ -306,17 +265,16 @@
       const fio = normalizeFio(fioInput.value);
       if (!fio) return;
 
-      // если фон ещё не загрузился — подождём через onload
-      if (!bg.complete || !bg.naturalWidth){
-        bg.onload = () => {
-          drawDiploma(fio);
-          showResultUI();
-        };
+      const run = () => {
+        drawDiploma(fio);
+        showResultUI();
+      };
+
+      if (!diplomaBg.complete || !diplomaBg.naturalWidth){
+        diplomaBg.onload = run;
         return;
       }
-
-      drawDiploma(fio);
-      showResultUI();
+      run();
     });
 
     dlBtn.addEventListener('click', () => {
@@ -333,7 +291,6 @@
       hideResultUI();
     });
 
-    // стартовое состояние
     setGenerateEnabled();
     hideResultUI();
   </script>
