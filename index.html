@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Генератор шаблона</title>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    input { padding: 10px 12px; min-width: 260px; }
+    button { padding: 10px 12px; cursor: pointer; }
+    canvas { margin-top: 16px; max-width: 100%; border: 1px solid #ddd; }
+    .hint { color: #555; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Генератор</h1>
+
+  <div class="row">
+    <input id="fio" placeholder="Имя Фамилия" />
+    <button id="gen">Сгенерировать</button>
+    <button id="dl" disabled>Скачать PNG</button>
+  </div>
+
+  <div class="hint">Шаблон: template.png (лежит рядом с index.html)</div>
+
+  <canvas id="c"></canvas>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const fioInput = document.getElementById('fio');
+    const genBtn = document.getElementById('gen');
+    const dlBtn = document.getElementById('dl');
+
+    const img = new Image();
+    img.src = 'template.png';
+
+    // Настройки текста (подгони под свой шаблон)
+    const TEXT_X = 600;     // координата X (поменяешь)
+    const TEXT_Y = 820;     // координата Y (поменяешь)
+    const MAX_W  = 900;     // макс ширина текста
+    const FONT   = '48px Arial'; // шрифт (можешь заменить)
+    const COLOR  = '#111';  // цвет
+
+    function fitTextToWidth(text, maxWidth) {
+      // уменьшает размер шрифта, если не помещается
+      let size = 48;
+      while (size > 18) {
+        ctx.font = `${size}px Arial`;
+        if (ctx.measureText(text).width <= maxWidth) return `${size}px Arial`;
+        size -= 2;
+      }
+      return `18px Arial`;
+    }
+
+    function render() {
+      const text = fioInput.value.trim();
+      if (!text) return;
+
+      // под размер картинки
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      ctx.fillStyle = COLOR;
+      ctx.textBaseline = 'middle';
+
+      // если длинное ФИО — уменьшим шрифт
+      ctx.font = FONT;
+      ctx.font = fitTextToWidth(text, MAX_W);
+
+      // выравнивание по центру “поля”
+      ctx.textAlign = 'center';
+      ctx.fillText(text, TEXT_X, TEXT_Y);
+
+      dlBtn.disabled = false;
+    }
+
+    genBtn.addEventListener('click', render);
+
+    dlBtn.addEventListener('click', () => {
+      const a = document.createElement('a');
+      a.download = 'result.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    });
+
+    img.onload = () => {
+      // опционально сразу показать пустой шаблон
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      ctx.drawImage(img, 0, 0);
+    };
+  </script>
+</body>
+</html>
