@@ -7,8 +7,7 @@
 
   <style>
     :root{
-      --bg1:#66b7ff;
-      --bg2:#2c7ec6;
+      --bg: #3D4E7E;
       --panel: rgba(255,255,255,.16);
       --panel2: rgba(255,255,255,.22);
       --text: rgba(255,255,255,.95);
@@ -19,7 +18,7 @@
 
     @font-face{
       font-family: "TT Lovelies Script";
-      src: url("./TT_Lovelies_Script.woff2?v=7") format("woff2");
+      src: url("./TT%20Lovelies%20Script.otf?v=9") format("opentype");
       font-display: swap;
     }
 
@@ -34,9 +33,10 @@
       color: var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:
-        radial-gradient(1100px 700px at 20% 10%, rgba(255,255,255,.22), transparent 60%),
-        radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.16), transparent 55%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
+        radial-gradient(1100px 700px at 20% 10%, rgba(255,255,255,.18), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.12), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,.06), transparent 55%),
+        var(--bg);
     }
 
     .wrap{
@@ -123,7 +123,7 @@
 
     .btn-primary{
       background: rgba(255,255,255,.94);
-      color: #114466;
+      color: #1b2f52;
       box-shadow: 0 10px 24px rgba(0,0,0,.18);
     }
     .btn-secondary{
@@ -131,10 +131,10 @@
       color: var(--text);
       border: 1px solid rgba(255,255,255,.22);
     }
+
     .btn-hidden{ display:none; }
     .btn-disabled{ opacity:.55; cursor:not-allowed; transform:none; }
 
-    /* Превью диплома: вообще не показываем, пока не сгенерировали */
     .preview{
       display:none;
       place-items:center;
@@ -165,7 +165,7 @@
       <div class="top">
         <div class="hero">
           <div class="line1">Введи имя и фамилию — получи диплом</div>
-          <div class="line2">Например: Иван Петров. Нажми кнопку — и скачай готовый диплом.</div>
+          <div class="line2">Например: Иван Петров. Нажми кнопку и скачай готовый диплом.</div>
         </div>
 
         <div class="controls">
@@ -195,9 +195,13 @@
     const canvas = document.getElementById('c');
     const ctx = canvas.getContext('2d');
 
-    // ВАЖНО: теперь используем template.png
+    // шаблон диплома
     const diplomaImg = new Image();
-    diplomaImg.src = './template.png?v=7';
+    diplomaImg.src = './template.png?v=9';
+
+    // точка центра имени на шаблоне 2480×3508 (0,0 = левый верх)
+    const NAME_X = 1287;
+    const NAME_Y = 1362;
 
     let generated = false;
 
@@ -216,23 +220,19 @@
     function fitFontSize(text, maxWidth, startSize, minSize){
       let size = startSize;
       while (size >= minSize){
-        ctx.font = `${size}px "TT Lovelies Script", cursive`;
+        ctx.font = `${size}px "TT Lovelies Script"`;
         if (ctx.measureText(text).width <= maxWidth) return size;
         size -= 2;
       }
       return minSize;
     }
 
-    // Разбиваем ФИО на 1–2 строки, чтобы выглядело крупно и красиво
+    // 1–2 строки: если 3+ слова, последнюю (обычно фамилию) переносим вниз
     function splitToTwoLines(text){
       const parts = text.split(' ');
       if (parts.length <= 2) return [text];
-
-      // обычно “Имя Фамилия” или “Имя Отчество Фамилия”
-      // делаем: строка1 = имя+отчество, строка2 = фамилия
       const last = parts.pop();
-      const firstLine = parts.join(' ');
-      return [firstLine, last];
+      return [parts.join(' '), last];
     }
 
     function drawDiploma(fio){
@@ -242,39 +242,30 @@
       ctx.clearRect(0,0,canvas.width,canvas.height);
       ctx.drawImage(diplomaImg, 0, 0);
 
-      const centerX = canvas.width / 2;
-
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
       // тень для читаемости
-      ctx.shadowColor = 'rgba(0,0,0,.22)';
+      ctx.shadowColor = 'rgba(0,0,0,.18)';
       ctx.shadowBlur = 10;
       ctx.shadowOffsetY = 2;
 
-      // “ДИПЛОМ” по центру (можно потом подвинуть)
-      ctx.fillStyle = 'rgba(255,255,255,.98)';
-      ctx.font = `92px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
-      ctx.fillText('ДИПЛОМ', centerX, canvas.height * 0.40);
-
-      // ФИО ниже, крупно, 1–2 строки
       const lines = splitToTwoLines(fio);
-      const baseY = canvas.height * 0.58;
-      const lineGap = 88; // расстояние между строками (под крупный шрифт)
+      const maxW = canvas.width * 0.86;
 
-      const maxW = canvas.width * 0.80;
-      const biggest = lines.reduce((a,b)=> a.length>b.length ? a : b, '');
+      const longest = lines.reduce((a,b)=> a.length>b.length ? a : b, '');
+      const size = fitFontSize(longest, maxW, 140, 64);
 
-      // шрифт побольше, чем было
-      const size = fitFontSize(biggest, maxW, 108, 56);
-      ctx.font = `${size}px "TT Lovelies Script", cursive`;
+      ctx.font = `${size}px "TT Lovelies Script"`;
       ctx.fillStyle = 'rgba(255,255,255,.99)';
 
+      const gap = Math.max(72, Math.round(size * 0.85));
+
       if (lines.length === 1){
-        ctx.fillText(lines[0], centerX, baseY);
+        ctx.fillText(lines[0], NAME_X, NAME_Y);
       } else {
-        ctx.fillText(lines[0], centerX, baseY - (lineGap/2));
-        ctx.fillText(lines[1], centerX, baseY + (lineGap/2));
+        ctx.fillText(lines[0], NAME_X, NAME_Y - gap/2);
+        ctx.fillText(lines[1], NAME_X, NAME_Y + gap/2);
       }
 
       ctx.shadowColor = 'transparent';
@@ -284,15 +275,22 @@
 
     function showResultUI(){
       previewBox.style.display = 'grid';
+
+      // скрываем “Получить диплом”, показываем “Скачать” и “Сделать ещё”
+      genBtn.classList.add('btn-hidden');
       dlBtn.classList.remove('btn-hidden');
       resetBtn.classList.remove('btn-hidden');
+
       generated = true;
     }
 
-    function hideResultUI(){
+    function resetUI(){
       previewBox.style.display = 'none';
+
+      genBtn.classList.remove('btn-hidden');
       dlBtn.classList.add('btn-hidden');
       resetBtn.classList.add('btn-hidden');
+
       generated = false;
     }
 
@@ -323,11 +321,11 @@
     resetBtn.addEventListener('click', () => {
       fioInput.value = '';
       setGenerateEnabled();
-      hideResultUI();
+      resetUI();
     });
 
     setGenerateEnabled();
-    hideResultUI();
+    resetUI();
   </script>
 </body>
 </html>
