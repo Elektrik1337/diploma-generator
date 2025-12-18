@@ -7,7 +7,6 @@
 
   <style>
     :root{
-      --bg: #3D4E7E;
       --panel: rgba(255,255,255,.16);
       --panel2: rgba(255,255,255,.22);
       --text: rgba(255,255,255,.95);
@@ -16,9 +15,10 @@
       --radius: 22px;
     }
 
+    /* У тебя файл называется ровно: TT Lovelies Script.otf */
     @font-face{
       font-family: "TT Lovelies Script";
-      src: url("./TT%20Lovelies%20Script.otf?v=9") format("opentype");
+      src: url("./TT%20Lovelies%20Script.otf?v=12") format("opentype");
       font-display: swap;
     }
 
@@ -32,11 +32,12 @@
       padding: 24px;
       color: var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+
+      /* фон страницы (светлый, приятный) */
       background:
-        radial-gradient(1100px 700px at 20% 10%, rgba(255,255,255,.18), transparent 60%),
-        radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.12), transparent 55%),
-        linear-gradient(180deg, rgba(255,255,255,.06), transparent 55%),
-        var(--bg);
+        radial-gradient(1100px 700px at 20% 10%, rgba(255,255,255,.22), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.16), transparent 55%),
+        linear-gradient(180deg, #66b7ff, #2c7ec6);
     }
 
     .wrap{
@@ -135,6 +136,7 @@
     .btn-hidden{ display:none; }
     .btn-disabled{ opacity:.55; cursor:not-allowed; transform:none; }
 
+    /* Превью диплома не видно до генерации */
     .preview{
       display:none;
       place-items:center;
@@ -165,7 +167,7 @@
       <div class="top">
         <div class="hero">
           <div class="line1">Введи имя и фамилию — получи диплом</div>
-          <div class="line2">Например: Иван Петров. Нажми кнопку и скачай готовый диплом.</div>
+          <div class="line2">Нажми кнопку — и скачай диплом.</div>
         </div>
 
         <div class="controls">
@@ -195,15 +197,16 @@
     const canvas = document.getElementById('c');
     const ctx = canvas.getContext('2d');
 
-    // шаблон диплома
+    // Используем template.png
     const diplomaImg = new Image();
-    diplomaImg.src = './template.png?v=9';
+    diplomaImg.src = './template.png?v=12';
 
-    // точка центра имени на шаблоне 2480×3508 (0,0 = левый верх)
+    // Центр надписи на шаблоне 2480×3508
     const NAME_X = 1287;
     const NAME_Y = 1362;
 
-    let generated = false;
+    // Цвет надписи (как ты просил)
+    const NAME_COLOR = '#3D4E7E';
 
     function normalizeFio(s){
       return s.replace(/\s+/g,' ').trim();
@@ -245,21 +248,22 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // тень для читаемости
-      ctx.shadowColor = 'rgba(0,0,0,.18)';
-      ctx.shadowBlur = 10;
+      // лёгкая тень для читаемости (можно убрать если не надо)
+      ctx.shadowColor = 'rgba(0,0,0,.10)';
+      ctx.shadowBlur = 6;
       ctx.shadowOffsetY = 2;
 
       const lines = splitToTwoLines(fio);
       const maxW = canvas.width * 0.86;
-
       const longest = lines.reduce((a,b)=> a.length>b.length ? a : b, '');
-      const size = fitFontSize(longest, maxW, 140, 64);
+
+      // Крупно
+      const size = fitFontSize(longest, maxW, 150, 64);
 
       ctx.font = `${size}px "TT Lovelies Script"`;
-      ctx.fillStyle = 'rgba(255,255,255,.99)';
+      ctx.fillStyle = NAME_COLOR;
 
-      const gap = Math.max(72, Math.round(size * 0.85));
+      const gap = Math.max(70, Math.round(size * 0.80));
 
       if (lines.length === 1){
         ctx.fillText(lines[0], NAME_X, NAME_Y);
@@ -276,42 +280,37 @@
     function showResultUI(){
       previewBox.style.display = 'grid';
 
-      // скрываем “Получить диплом”, показываем “Скачать” и “Сделать ещё”
+      // после генерации “Получить диплом” исчезает
       genBtn.classList.add('btn-hidden');
       dlBtn.classList.remove('btn-hidden');
       resetBtn.classList.remove('btn-hidden');
-
-      generated = true;
     }
 
     function resetUI(){
       previewBox.style.display = 'none';
-
       genBtn.classList.remove('btn-hidden');
       dlBtn.classList.add('btn-hidden');
       resetBtn.classList.add('btn-hidden');
-
-      generated = false;
     }
 
-    genBtn.addEventListener('click', () => {
+    genBtn.addEventListener('click', async () => {
       const fio = normalizeFio(fioInput.value);
       if (!fio) return;
 
-      const run = () => {
-        drawDiploma(fio);
-        showResultUI();
-      };
-
+      // дождаться загрузки картинки
       if (!diplomaImg.complete || !diplomaImg.naturalWidth){
-        diplomaImg.onload = run;
-        return;
+        await new Promise(resolve => diplomaImg.onload = resolve);
       }
-      run();
+
+      // дождаться загрузки шрифта (иначе canvas рисует системным)
+      await document.fonts.load('80px "TT Lovelies Script"');
+      await document.fonts.ready;
+
+      drawDiploma(fio);
+      showResultUI();
     });
 
     dlBtn.addEventListener('click', () => {
-      if (!generated) return;
       const a = document.createElement('a');
       a.download = 'diploma.png';
       a.href = canvas.toDataURL('image/png');
