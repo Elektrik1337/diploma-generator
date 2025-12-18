@@ -15,10 +15,10 @@
       --radius: 22px;
     }
 
-    /* У тебя файл называется ровно: TT Lovelies Script.otf */
+    /* У тебя файл: TT Lovelies Script.woff2 */
     @font-face{
       font-family: "TT Lovelies Script";
-      src: url("./TT%20Lovelies%20Script.otf?v=12") format("opentype");
+      src: url("./TT%20Lovelies%20Script.woff2?v=20") format("woff2");
       font-display: swap;
     }
 
@@ -33,7 +33,7 @@
       color: var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 
-      /* фон страницы (светлый, приятный) */
+      /* фон страницы */
       background:
         radial-gradient(1100px 700px at 20% 10%, rgba(255,255,255,.22), transparent 60%),
         radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.16), transparent 55%),
@@ -86,7 +86,7 @@
 
     input{
       width: 100%;
-      max-width: 420px;
+      max-width: 520px;
       appearance:none;
       border: 1px solid rgba(255,255,255,.22);
       background: rgba(0,0,0,.12);
@@ -113,7 +113,7 @@
     button{
       border:0;
       border-radius: 999px;
-      padding: 12px 16px;
+      padding: 12px 18px;
       font-size: 16px;
       cursor:pointer;
       transition: transform .06s ease, filter .2s ease, opacity .2s ease;
@@ -163,11 +163,12 @@
 <body>
   <div class="wrap">
 
-    <div class="panel">
+    <!-- Шапка (текст + ввод) -->
+    <div id="headerPanel" class="panel">
       <div class="top">
         <div class="hero">
           <div class="line1">Введи имя и фамилию — получи диплом</div>
-          <div class="line2">Нажми кнопку — и скачай диплом.</div>
+          <div class="line2">Например: Иван Петров. Нажми кнопку и скачай готовый диплом.</div>
         </div>
 
         <div class="controls">
@@ -181,6 +182,7 @@
       </div>
     </div>
 
+    <!-- Превью диплома -->
     <div id="preview" class="panel preview">
       <canvas id="c"></canvas>
     </div>
@@ -188,6 +190,8 @@
   </div>
 
   <script>
+    const headerPanel = document.getElementById('headerPanel');
+
     const fioInput = document.getElementById('fio');
     const genBtn = document.getElementById('gen');
     const dlBtn = document.getElementById('dl');
@@ -197,15 +201,15 @@
     const canvas = document.getElementById('c');
     const ctx = canvas.getContext('2d');
 
-    // Используем template.png
+    // диплом
     const diplomaImg = new Image();
-    diplomaImg.src = './template.png?v=12';
+    diplomaImg.src = './template.png?v=20';
 
-    // Центр надписи на шаблоне 2480×3508
+    // центр ФИО на шаблоне 2480×3508
     const NAME_X = 1287;
     const NAME_Y = 1362;
 
-    // Цвет надписи (как ты просил)
+    // цвет ФИО
     const NAME_COLOR = '#3D4E7E';
 
     function normalizeFio(s){
@@ -230,7 +234,7 @@
       return minSize;
     }
 
-    // 1–2 строки: если 3+ слова, последнюю (обычно фамилию) переносим вниз
+    // 1–2 строки: если 3+ слова, последнюю переносим вниз
     function splitToTwoLines(text){
       const parts = text.split(' ');
       if (parts.length <= 2) return [text];
@@ -248,7 +252,7 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // лёгкая тень для читаемости (можно убрать если не надо)
+      // мягкая тень (если не нужна — скажи, уберу)
       ctx.shadowColor = 'rgba(0,0,0,.10)';
       ctx.shadowBlur = 6;
       ctx.shadowOffsetY = 2;
@@ -257,7 +261,7 @@
       const maxW = canvas.width * 0.86;
       const longest = lines.reduce((a,b)=> a.length>b.length ? a : b, '');
 
-      // Крупно
+      // крупный шрифт
       const size = fitFontSize(longest, maxW, 150, 64);
 
       ctx.font = `${size}px "TT Lovelies Script"`;
@@ -280,6 +284,12 @@
     function showResultUI(){
       previewBox.style.display = 'grid';
 
+      // убираем текстовую часть (шапку слева),
+      // но оставляем панель с полем/кнопками? — ты просил убрать именно текст.
+      // поэтому скрываем hero (текст), а controls оставляем.
+      const hero = headerPanel.querySelector('.hero');
+      if (hero) hero.style.display = 'none';
+
       // после генерации “Получить диплом” исчезает
       genBtn.classList.add('btn-hidden');
       dlBtn.classList.remove('btn-hidden');
@@ -288,6 +298,11 @@
 
     function resetUI(){
       previewBox.style.display = 'none';
+
+      // вернуть текст обратно
+      const hero = headerPanel.querySelector('.hero');
+      if (hero) hero.style.display = 'grid';
+
       genBtn.classList.remove('btn-hidden');
       dlBtn.classList.add('btn-hidden');
       resetBtn.classList.add('btn-hidden');
@@ -297,12 +312,12 @@
       const fio = normalizeFio(fioInput.value);
       if (!fio) return;
 
-      // дождаться загрузки картинки
+      // ждём картинку
       if (!diplomaImg.complete || !diplomaImg.naturalWidth){
         await new Promise(resolve => diplomaImg.onload = resolve);
       }
 
-      // дождаться загрузки шрифта (иначе canvas рисует системным)
+      // ждём шрифт
       await document.fonts.load('80px "TT Lovelies Script"');
       await document.fonts.ready;
 
