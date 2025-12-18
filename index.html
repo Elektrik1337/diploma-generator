@@ -15,10 +15,9 @@
       --radius: 22px;
     }
 
-    /* У тебя файл: TT Lovelies Script.woff2 */
     @font-face{
       font-family: "TT Lovelies Script";
-      src: url("./TT%20Lovelies%20Script.woff2?v=20") format("woff2");
+      src: url("./TT%20Lovelies%20Script.woff2?v=40") format("woff2");
       font-display: swap;
     }
 
@@ -32,8 +31,6 @@
       padding: 24px;
       color: var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-
-      /* фон страницы */
       background:
         radial-gradient(1100px 700px at 20% 10%, rgba(255,255,255,.22), transparent 60%),
         radial-gradient(900px 600px at 80% 20%, rgba(255,255,255,.16), transparent 55%),
@@ -43,7 +40,7 @@
     .wrap{
       width:min(980px,100%);
       display:grid;
-      gap: 16px;
+      gap: 14px;
     }
 
     .panel{
@@ -51,11 +48,38 @@
       border: 1px solid rgba(255,255,255,.18);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 18px;
+      padding: 16px;
       backdrop-filter: blur(10px);
     }
 
-    .top{
+    /* ===== КНОПКИ СВЕРХУ ===== */
+    .actions{
+      display:none;
+      justify-content:center;
+      gap: 12px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      border:0;
+      border-radius: 999px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor:pointer;
+      transition: transform .06s ease, filter .2s ease, opacity .2s ease;
+      user-select:none;
+      white-space:nowrap;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .btn-secondary{
+      background: rgba(255,255,255,.18);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.22);
+    }
+
+    /* ===== ПАНЕЛЬ ВВОДА (ДО ГЕНЕРАЦИИ) ===== */
+    .input-panel{
       display:grid;
       grid-template-columns: 1.2fr 1fr;
       gap: 14px;
@@ -66,22 +90,19 @@
       display:grid;
       gap: 8px;
     }
-
     .hero .line1{
       font-size: 22px;
       font-weight: 600;
-      letter-spacing: .2px;
     }
     .hero .line2{
       font-size: 15px;
       color: var(--muted);
-      line-height: 1.35;
     }
 
     .controls{
       display:grid;
       gap: 10px;
-      justify-items: end;
+      justify-items:end;
     }
 
     input{
@@ -96,51 +117,23 @@
       outline:none;
       font-size: 16px;
     }
-    input::placeholder{ color: rgba(255,255,255,.62); }
-    input:focus{
-      border-color: rgba(255,255,255,.42);
-      box-shadow: 0 0 0 4px rgba(255,255,255,.12);
-    }
-
-    .btnrow{
-      display:flex;
-      gap: 10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-      width: 100%;
-    }
-
-    button{
-      border:0;
-      border-radius: 999px;
-      padding: 12px 18px;
-      font-size: 16px;
-      cursor:pointer;
-      transition: transform .06s ease, filter .2s ease, opacity .2s ease;
-      user-select:none;
-      white-space:nowrap;
-    }
-    button:active{ transform: translateY(1px); }
 
     .btn-primary{
       background: rgba(255,255,255,.94);
       color: #1b2f52;
       box-shadow: 0 10px 24px rgba(0,0,0,.18);
     }
-    .btn-secondary{
-      background: rgba(255,255,255,.18);
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,.22);
+
+    .btn-disabled{
+      opacity:.55;
+      cursor:not-allowed;
     }
 
-    .btn-hidden{ display:none; }
-    .btn-disabled{ opacity:.55; cursor:not-allowed; transform:none; }
-
-    /* Превью диплома не видно до генерации */
+    /* ===== ДИПЛОМ ===== */
     .preview{
       display:none;
       place-items:center;
-      padding: 18px;
+      padding: 14px;
     }
     canvas{
       width: min(900px, 100%);
@@ -151,195 +144,146 @@
     }
 
     @media (max-width: 760px){
-      .top{ grid-template-columns: 1fr; }
+      .input-panel{ grid-template-columns: 1fr; }
       .controls{ justify-items: stretch; }
-      .btnrow{ justify-content: stretch; }
       button{ width: 100%; }
-      input{ max-width: 100%; }
     }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
+<div class="wrap">
 
-    <!-- Шапка (текст + ввод) -->
-    <div id="headerPanel" class="panel">
-      <div class="top">
-        <div class="hero">
-          <div class="line1">Введи имя и фамилию — получи диплом</div>
-          <div class="line2">Например: Иван Петров. Нажми кнопку и скачай готовый диплом.</div>
-        </div>
-
-        <div class="controls">
-          <input id="fio" placeholder="Имя Фамилия" autocomplete="name" />
-          <div class="btnrow">
-            <button id="gen" class="btn-primary btn-disabled" disabled>Получить диплом</button>
-            <button id="dl" class="btn-secondary btn-hidden">Скачать диплом</button>
-            <button id="reset" class="btn-secondary btn-hidden">Сделать ещё</button>
-          </div>
-        </div>
-      </div>
+  <!-- ПАНЕЛЬ ВВОДА -->
+  <div id="inputPanel" class="panel input-panel">
+    <div class="hero">
+      <div class="line1">Введи имя и фамилию — получи диплом</div>
+      <div class="line2">Например: Иван Петров</div>
     </div>
 
-    <!-- Превью диплома -->
-    <div id="preview" class="panel preview">
-      <canvas id="c"></canvas>
+    <div class="controls">
+      <input id="fio" placeholder="Имя Фамилия" />
+      <button id="gen" class="btn-primary btn-disabled" disabled>Получить диплом</button>
     </div>
-
   </div>
 
-  <script>
-    const headerPanel = document.getElementById('headerPanel');
+  <!-- КНОПКИ СВЕРХУ ДИПЛОМА -->
+  <div id="actionsPanel" class="panel actions">
+    <button id="dl" class="btn-secondary">Скачать диплом</button>
+    <button id="reset" class="btn-secondary">Сделать ещё</button>
+  </div>
 
-    const fioInput = document.getElementById('fio');
-    const genBtn = document.getElementById('gen');
-    const dlBtn = document.getElementById('dl');
-    const resetBtn = document.getElementById('reset');
+  <!-- ДИПЛОМ -->
+  <div id="preview" class="panel preview">
+    <canvas id="c"></canvas>
+  </div>
 
-    const previewBox = document.getElementById('preview');
-    const canvas = document.getElementById('c');
-    const ctx = canvas.getContext('2d');
+</div>
 
-    // диплом
-    const diplomaImg = new Image();
-    diplomaImg.src = './template.png?v=20';
+<script>
+  const inputPanel = document.getElementById('inputPanel');
+  const actionsPanel = document.getElementById('actionsPanel');
+  const previewBox = document.getElementById('preview');
 
-    // центр ФИО на шаблоне 2480×3508
-    const NAME_X = 1287;
-    const NAME_Y = 1362;
+  const fioInput = document.getElementById('fio');
+  const genBtn = document.getElementById('gen');
+  const dlBtn = document.getElementById('dl');
+  const resetBtn = document.getElementById('reset');
 
-    // цвет ФИО
-    const NAME_COLOR = '#3D4E7E';
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
 
-    function normalizeFio(s){
-      return s.replace(/\s+/g,' ').trim();
+  const diplomaImg = new Image();
+  diplomaImg.src = './template.png?v=40';
+
+  // === ТВОИ КООРДИНАТЫ ===
+  const NAME_X = 1287;
+  const NAME_Y = 1302;
+
+  const NAME_COLOR = '#3D4E7E';
+
+  function normalizeFio(s){
+    return s.replace(/\s+/g,' ').trim();
+  }
+
+  fioInput.addEventListener('input', () => {
+    const ok = normalizeFio(fioInput.value).length >= 3;
+    genBtn.disabled = !ok;
+    genBtn.classList.toggle('btn-disabled', !ok);
+  });
+
+  function splitToTwoLines(text){
+    const p = text.split(' ');
+    if (p.length <= 2) return [text];
+    return [p.slice(0,-1).join(' '), p[p.length-1]];
+  }
+
+  function fitFontSize(text, maxWidth){
+    for(let s=150; s>=64; s-=2){
+      ctx.font = `${s}px "TT Lovelies Script"`;
+      if(ctx.measureText(text).width <= maxWidth) return s;
     }
+    return 64;
+  }
 
-    function setGenerateEnabled(){
-      const text = normalizeFio(fioInput.value);
-      const ok = text.length >= 3;
-      genBtn.disabled = !ok;
-      genBtn.classList.toggle('btn-disabled', !ok);
+  function drawDiploma(fio){
+    canvas.width = diplomaImg.naturalWidth;
+    canvas.height = diplomaImg.naturalHeight;
+
+    ctx.drawImage(diplomaImg,0,0);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = NAME_COLOR;
+
+    const lines = splitToTwoLines(fio);
+    const longest = lines.reduce((a,b)=>a.length>b.length?a:b,'');
+    const size = fitFontSize(longest, canvas.width*0.86);
+
+    ctx.font = `${size}px "TT Lovelies Script"`;
+
+    const gap = size*0.8;
+
+    if(lines.length===1){
+      ctx.fillText(lines[0], NAME_X, NAME_Y);
+    }else{
+      ctx.fillText(lines[0], NAME_X, NAME_Y-gap/2);
+      ctx.fillText(lines[1], NAME_X, NAME_Y+gap/2);
     }
-    fioInput.addEventListener('input', setGenerateEnabled);
+  }
 
-    function fitFontSize(text, maxWidth, startSize, minSize){
-      let size = startSize;
-      while (size >= minSize){
-        ctx.font = `${size}px "TT Lovelies Script"`;
-        if (ctx.measureText(text).width <= maxWidth) return size;
-        size -= 2;
-      }
-      return minSize;
+  genBtn.addEventListener('click', async () => {
+    const fio = normalizeFio(fioInput.value);
+    if(!fio) return;
+
+    if(!diplomaImg.complete){
+      await new Promise(r=>diplomaImg.onload=r);
     }
+    await document.fonts.load('80px "TT Lovelies Script"');
 
-    // 1–2 строки: если 3+ слова, последнюю переносим вниз
-    function splitToTwoLines(text){
-      const parts = text.split(' ');
-      if (parts.length <= 2) return [text];
-      const last = parts.pop();
-      return [parts.join(' '), last];
-    }
+    drawDiploma(fio);
 
-    function drawDiploma(fio){
-      canvas.width = diplomaImg.naturalWidth;
-      canvas.height = diplomaImg.naturalHeight;
+    inputPanel.style.display='none';
+    actionsPanel.style.display='flex';
+    previewBox.style.display='grid';
+  });
 
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      ctx.drawImage(diplomaImg, 0, 0);
+  dlBtn.addEventListener('click',()=>{
+    const a=document.createElement('a');
+    a.download='diploma.png';
+    a.href=canvas.toDataURL('image/png');
+    a.click();
+  });
 
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+  resetBtn.addEventListener('click',()=>{
+    fioInput.value='';
+    genBtn.disabled=true;
+    genBtn.classList.add('btn-disabled');
 
-      // мягкая тень (если не нужна — скажи, уберу)
-      ctx.shadowColor = 'rgba(0,0,0,.10)';
-      ctx.shadowBlur = 6;
-      ctx.shadowOffsetY = 2;
-
-      const lines = splitToTwoLines(fio);
-      const maxW = canvas.width * 0.86;
-      const longest = lines.reduce((a,b)=> a.length>b.length ? a : b, '');
-
-      // крупный шрифт
-      const size = fitFontSize(longest, maxW, 150, 64);
-
-      ctx.font = `${size}px "TT Lovelies Script"`;
-      ctx.fillStyle = NAME_COLOR;
-
-      const gap = Math.max(70, Math.round(size * 0.80));
-
-      if (lines.length === 1){
-        ctx.fillText(lines[0], NAME_X, NAME_Y);
-      } else {
-        ctx.fillText(lines[0], NAME_X, NAME_Y - gap/2);
-        ctx.fillText(lines[1], NAME_X, NAME_Y + gap/2);
-      }
-
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetY = 0;
-    }
-
-    function showResultUI(){
-      previewBox.style.display = 'grid';
-
-      // убираем текстовую часть (шапку слева),
-      // но оставляем панель с полем/кнопками? — ты просил убрать именно текст.
-      // поэтому скрываем hero (текст), а controls оставляем.
-      const hero = headerPanel.querySelector('.hero');
-      if (hero) hero.style.display = 'none';
-
-      // после генерации “Получить диплом” исчезает
-      genBtn.classList.add('btn-hidden');
-      dlBtn.classList.remove('btn-hidden');
-      resetBtn.classList.remove('btn-hidden');
-    }
-
-    function resetUI(){
-      previewBox.style.display = 'none';
-
-      // вернуть текст обратно
-      const hero = headerPanel.querySelector('.hero');
-      if (hero) hero.style.display = 'grid';
-
-      genBtn.classList.remove('btn-hidden');
-      dlBtn.classList.add('btn-hidden');
-      resetBtn.classList.add('btn-hidden');
-    }
-
-    genBtn.addEventListener('click', async () => {
-      const fio = normalizeFio(fioInput.value);
-      if (!fio) return;
-
-      // ждём картинку
-      if (!diplomaImg.complete || !diplomaImg.naturalWidth){
-        await new Promise(resolve => diplomaImg.onload = resolve);
-      }
-
-      // ждём шрифт
-      await document.fonts.load('80px "TT Lovelies Script"');
-      await document.fonts.ready;
-
-      drawDiploma(fio);
-      showResultUI();
-    });
-
-    dlBtn.addEventListener('click', () => {
-      const a = document.createElement('a');
-      a.download = 'diploma.png';
-      a.href = canvas.toDataURL('image/png');
-      a.click();
-    });
-
-    resetBtn.addEventListener('click', () => {
-      fioInput.value = '';
-      setGenerateEnabled();
-      resetUI();
-    });
-
-    setGenerateEnabled();
-    resetUI();
-  </script>
+    inputPanel.style.display='grid';
+    actionsPanel.style.display='none';
+    previewBox.style.display='none';
+  });
+</script>
 </body>
 </html>
